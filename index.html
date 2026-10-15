@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'">
+<title>ג'סי — כלי מטפל/ת</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 1.5rem auto; padding: 0 1rem; line-height: 1.6; }
+  h1 { font-size: 1.4rem } h2 { font-size: 1.1rem; margin-top: 1.5rem }
+  section { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin: 1rem 0 }
+  label { display: block; margin: .6rem 0 .2rem; font-weight: 600 }
+  input, select, textarea, button { font: inherit; padding: .4rem .6rem; width: 100%; box-sizing: border-box }
+  button { width: auto; cursor: pointer; margin-top: .6rem }
+  textarea { min-height: 4rem }
+  .note { color: #555; font-size: .9rem } .err { color: #b00020 } .ok { color: #0a6b2d }
+  code, .mono { direction: ltr; unicode-bidi: plaintext; word-break: break-all; font-size: .8rem }
+  [hidden] { display: none !important }
+</style>
+</head>
+<body>
+<h1>ג'סי — כלי מטפל/ת ליצירת תוכנית טיפול</h1>
+<p class="note">הכלי רץ מקומית בלבד, ללא שרת וללא רשת. הוא <b>אינו</b> אחראי להעברת הקובץ למטופל/ת — את הקובץ המוצפן שולחים בערוץ לבחירתכם (מייל, וואטסאפ, USB). אין לשמור בכלי שם או פרט מזהה של מטופל/ת.</p>
+
+<section id="unlock">
+  <h2>1. פתיחה</h2>
+  <p class="note" id="unlockHelp"></p>
+  <label for="pw">סיסמה מקומית</label>
+  <input id="pw" type="password" autocomplete="off">
+  <button id="unlockBtn"></button>
+  <p id="unlockMsg" class="err"></p>
+</section>
+
+<div id="main" hidden>
+<section>
+  <h2>2. מפתח חתימה של המפרסם/ת</h2>
+  <p class="note">המפתח הציבורי הזה חייב להיות מוטבע באפליקציה בעת הבנייה (<code>PUBLISHER_PUBLIC_KEY</code>). המפתח הפרטי נשמר כאן מוצפן בסיסמה, ולא נשלח לשום מקום. גבו אותו בנפרד.</p>
+  <div class="mono" id="pubKey"></div>
+</section>
+
+<section>
+  <h2>3. כרטיסי מטופלים</h2>
+  <p class="note">הדביקו את קוד ההצמדה שמוצג באפליקציה של המטופל/ת. בחרו תווית פנימית שאינה שם או מזהה אמיתי (למשל "M-12").</p>
+  <label for="pairText">קוד הצמדה</label>
+  <textarea id="pairText" class="mono"></textarea>
+  <label for="cardLabel">תווית פנימית (אם ריק, תילקח מקוד השאלון שבקוד ההצמדה)</label>
+  <input id="cardLabel">
+  <button id="addCard">הוספת כרטיס</button>
+  <p id="cardMsg"></p>
+  <ul id="cards"></ul>
+</section>
+
+<section>
+  <h2>4. יצירת תוכנית</h2>
+  <label for="card">מטופל/ת (כרטיס)</label><select id="card"></select>
+  <label for="proto">פרוטוקול</label><select id="proto"></select>
+  <p class="note" id="protoInfo"></p>
+  <label for="freq">תדירות משימות</label>
+  <select id="freq"><option value="daily">יומית</option><option value="weekly">שבועית</option></select>
+  <label for="times">שעות תזכורת (מופרדות בפסיק, HH:MM)</label><input id="times" value="09:00, 20:30" dir="ltr">
+  <label for="diff">רמת קושי</label>
+  <select id="diff"><option value="easy">קלה</option><option value="moderate" selected>בינונית</option><option value="hard">מאתגרת</option></select>
+  <label><input type="checkbox" id="reinf" checked style="width:auto"> חיזוקים מופעלים</label>
+  <label for="goals">מטרות (שורה לכל מטרה)</label><textarea id="goals"></textarea>
+  <label for="notes">הערות חופשיות</label><textarea id="notes"></textarea>
+  <label for="ver">גרסת תוכנית (חייבת לעלות על הגרסה הקיימת אצל המטופל/ת)</label>
+  <input id="ver" type="number" min="1" value="1" dir="ltr">
+  <button id="export">ייצוא תוכנית מוצפנת וחתומה</button>
+  <p id="expMsg"></p>
+</section>
+</div>
+
+<script>
+// Jessie plan-file crypto (shared by the therapist tool and its tests).
+// Format: Ed25519 signature over the exact plan JSON string, then
+// envelope encryption: random AES-256-GCM key wrapped with the device's
+// RSA-2048 public key (RSA-OAEP with SHA-1 / MGF1-SHA-1, so Android Keystore
+// can unwrap it on API 26+; it only ever wraps a random 32-byte key).
+const subtle = globalThis.crypto.subtle;
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+const FORMAT = "jessie-plan";
+const FORMAT_VERSION = 1;
+
+const b64 = (buf) => {
+  const bytes = new Uint8Array(buf);
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s);
+};
+const unb64 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0));
+
+async function sha256Hex(text) {
+  const d = await subtle.digest("SHA-256", enc.encode(text));
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ---- Publisher (verified signer) keys ----
+async function generatePublisherKeys() {
+  const kp = await subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]);
+  return {
+    publicRaw: b64(await subtle.exportKey("raw", kp.publicKey)),
+    privatePkcs8: b64(await subtle.exportKey("pkcs8", kp.privateKey)),
+  };
+}
+
+async function keyId(publicRawB64) {
+  return (await sha256Hex(publicRawB64)).slice(0, 16);
+}
+
+// ---- Plan ----
+function newPlanId() {
+  return globalThis.crypto.randomUUID();
+}
+
+async function buildPlan({ protocolRef, customizations, planId = newPlanId(), planVersion = 1, createdAt = new Date().toISOString() }) {
+  return {
+    schema_version: "1.0",
+    plan_id: planId,
+    plan_version: planVersion,
+    created_at: createdAt,
+    protocol_ref: protocolRef,
+    customizations,
+  };
+}
+
+// The signature covers the exact UTF-8 bytes of planJson, so no canonicalisation is needed.
+async function signPlan(plan, privatePkcs8B64, publicRawB64) {
+  const planJson = JSON.stringify(plan);
+  const key = await subtle.importKey("pkcs8", unb64(privatePkcs8B64), { name: "Ed25519" }, false, ["sign"]);
+  const sig = await subtle.sign({ name: "Ed25519" }, key, enc.encode(planJson));
+  return {
+    planJson,
+    signature: b64(sig),
+    signerKeyId: await keyId(publicRawB64),
+    contentHash: "sha256:" + (await sha256Hex(planJson)),
+  };
+}
+
+async function verifyPlan({ planJson, signature }, publicRawB64) {
+  const key = await subtle.importKey("raw", unb64(publicRawB64), { name: "Ed25519" }, false, ["verify"]);
+  return subtle.verify({ name: "Ed25519" }, key, unb64(signature), enc.encode(planJson));
+}
+
+// ---- Device pairing payload (what the app shows as a QR) ----
+function parsePairing(text) {
+  const p = JSON.parse(text);
+  if (p.t !== "jessie-pair" || p.v !== 1 || !p.device_id || !p.pub) throw new Error("קוד הצמדה לא תקין");
+  return { deviceId: p.device_id, publicSpki: p.pub };
+}
+
+// ---- Envelope encryption ----
+const aad = (deviceId) => enc.encode(`${FORMAT}|${FORMAT_VERSION}|${deviceId}`);
+
+async function encryptPlanFile(signed, devicePublicSpkiB64, deviceId) {
+  const payload = JSON.stringify({
+    plan_json: signed.planJson,
+    signature: signed.signature,
+    signer_key_id: signed.signerKeyId,
+    content_hash: signed.contentHash,
+  });
+  const aes = await subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt"]);
+  const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
+  const ct = await subtle.encrypt({ name: "AES-GCM", iv, additionalData: aad(deviceId) }, aes, enc.encode(payload));
+  const rsa = await subtle.importKey("spki", unb64(devicePublicSpkiB64), { name: "RSA-OAEP", hash: "SHA-1" }, false, ["encrypt"]);
+  const wrapped = await subtle.encrypt({ name: "RSA-OAEP" }, rsa, await subtle.exportKey("raw", aes));
+  return {
+    format: FORMAT,
+    version: FORMAT_VERSION,
+    device_id: deviceId,
+    wrapped_key: b64(wrapped),
+    iv: b64(iv),
+    ciphertext: b64(ct),
+  };
+}
+
+// Reference decryptor (the Android app implements the same steps; used for round-trip tests).
+async function decryptPlanFile(file, devicePrivatePkcs8B64) {
+  if (file.format !== FORMAT || file.version !== FORMAT_VERSION) throw new Error("פורמט קובץ לא נתמך");
+  const rsa = await subtle.importKey("pkcs8", unb64(devicePrivatePkcs8B64), { name: "RSA-OAEP", hash: "SHA-1" }, false, ["decrypt"]);
+  let raw;
+  try {
+    raw = await subtle.decrypt({ name: "RSA-OAEP" }, rsa, unb64(file.wrapped_key));
+  } catch {
+    throw new Error("הקובץ לא תואם למכשיר הזה — ייתכן שהוא נוצר למטופל/ת אחר/ת");
+  }
+  const aes = await subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["decrypt"]);
+  const pt = await subtle.decrypt({ name: "AES-GCM", iv: unb64(file.iv), additionalData: aad(file.device_id) }, aes, unb64(file.ciphertext));
+  return JSON.parse(dec.decode(pt));
+}
+
+// ---- Password-protected local storage (publisher key + patient cards) ----
+async function pwKey(password, salt) {
+  const base = await subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+  return subtle.deriveKey({ name: "PBKDF2", salt, iterations: 600000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+
+async function sealWithPassword(obj, password) {
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
+  const ct = await subtle.encrypt({ name: "AES-GCM", iv }, await pwKey(password, salt), enc.encode(JSON.stringify(obj)));
+  return { salt: b64(salt), iv: b64(iv), ct: b64(ct) };
+}
+
+async function openWithPassword(sealed, password) {
+  try {
+    const pt = await subtle.decrypt({ name: "AES-GCM", iv: unb64(sealed.iv) }, await pwKey(password, unb64(sealed.salt)), unb64(sealed.ct));
+    return JSON.parse(dec.decode(pt));
+  } catch {
+    throw new Error("סיסמה שגויה");
+  }
+}
+
+</script>
+<script>
+const PROTOCOLS = [{"schema_version":"1.0","protocol_id":"dev-placeholder-exposure","protocol_version":"0.0.1","title":"[DEV] פרוטוקול דמה לפיתוח בלבד","target_population":"בדיקות פיתוח","approved_by":"DEV-PLACEHOLDER — not clinically reviewed","stages":[{"stage_id":"stage-1","title":"שלב בדיקה 1","advance_condition":"3 השלמות רצופות","tasks":[{"task_id":"t1","type":"exercise","prompt":"[DEV] משימת דמה: תאר/י מצב יומיומי קל"},{"task_id":"t2","type":"exercise","prompt":"[DEV] משימת דמה: תרגיל נשימה של דקה"}]}],"reinforcement_pool":{"on_complete":["[DEV] כל הכבוד!"],"on_skip":["[DEV] ננסה שוב מחר."],"on_hard_day":["[DEV] יום קשה הוא חלק מהדרך."]}}];
+const LS_KEY = "jessie-therapist-vault";
+const $ = (id) => document.getElementById(id);
+let password = null, vault = null; // vault = { publisher: {publicRaw, privatePkcs8}, cards: [{label, deviceId, publicSpki}], planIds: {} }
+
+const stored = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; } };
+$("unlockHelp").textContent = stored() ? "הזינו את הסיסמה שהגדרתם." : "הפעלה ראשונה: בחרו סיסמה. היא תצפין את מפתח החתימה וכרטיסי המטופלים, ואין דרך לשחזר אותה.";
+$("unlockBtn").textContent = stored() ? "פתיחה" : "יצירת מאגר";
+
+async function save() { localStorage.setItem(LS_KEY, JSON.stringify(await sealWithPassword(vault, password))); }
+
+$("unlockBtn").onclick = async () => {
+  $("unlockMsg").textContent = "";
+  const pw = $("pw").value;
+  if (pw.length < 8) { $("unlockMsg").textContent = "הסיסמה חייבת להכיל לפחות 8 תווים"; return; }
+  try {
+    const s = stored();
+    if (s) vault = await openWithPassword(s, pw);
+    else vault = { publisher: await generatePublisherKeys(), cards: [], planIds: {} };
+    password = pw;
+    await save();
+    $("unlock").hidden = true; $("main").hidden = false; render();
+  } catch (e) { $("unlockMsg").textContent = e.message; }
+};
+
+function render() {
+  $("pubKey").textContent = vault.publisher.publicRaw;
+  $("cards").innerHTML = ""; $("card").innerHTML = "";
+  vault.cards.forEach((c, i) => {
+    const li = document.createElement("li"); li.textContent = c.label + " ";
+    const rm = document.createElement("button"); rm.textContent = "הסרה";
+    rm.onclick = async () => { vault.cards.splice(i, 1); await save(); render(); };
+    li.append(rm); $("cards").append(li);
+    $("card").append(new Option(c.label, i));
+  });
+  if (!$("proto").options.length) PROTOCOLS.forEach((p, i) => $("proto").append(new Option(p.title, i)));
+  const p = PROTOCOLS[$("proto").value || 0];
+  $("protoInfo").textContent = p ? "אושר על ידי: " + p.approved_by : "";
+}
+$("proto").onchange = render;
+
+$("addCard").onclick = async () => {
+  try {
+    const text = $("pairText").value.trim();
+    const { deviceId, publicSpki } = parsePairing(text);
+    // Optional questionnaire invite code (identifier only, never key material).
+    const invite = JSON.parse(text).invite;
+    if (invite !== undefined && !/^P-[A-Z0-9]{6}$/.test(invite)) throw new Error("קוד השאלון בקוד ההצמדה אינו תקין");
+    const label = $("cardLabel").value.trim() || invite || "";
+    if (!label) throw new Error("יש להזין תווית פנימית");
+    vault.cards.push({ label, deviceId, publicSpki, ...(invite ? { invite } : {}) });
+    await save(); $("pairText").value = ""; $("cardLabel").value = ""; $("cardMsg").textContent = ""; render();
+  } catch (e) { $("cardMsg").className = "err"; $("cardMsg").textContent = e.message; }
+};
+
+$("export").onclick = async () => {
+  const m = $("expMsg"); m.className = "err"; m.textContent = "";
+  try {
+    const card = vault.cards[$("card").value];
+    if (!card) throw new Error("יש להוסיף ולבחור כרטיס מטופל/ת");
+    const proto = PROTOCOLS[$("proto").value];
+    if (!proto.approved_by || proto.approved_by.startsWith("DEV-PLACEHOLDER")) {
+      if (!confirm("הפרוטוקול הזה מסומן כפרוטוקול פיתוח שלא נבדק קלינית. להמשיך?")) return;
+    }
+    const times = $("times").value.split(",").map((s) => s.trim()).filter(Boolean);
+    if (!times.every((t) => /^([01]\d|2[0-3]):[0-5]\d$/.test(t))) throw new Error("שעות התזכורת חייבות להיות בפורמט HH:MM");
+    const version = parseInt($("ver").value, 10);
+    if (!(version >= 1)) throw new Error("גרסת תוכנית לא תקינה");
+    const key = card.deviceId + "|" + proto.protocol_id;
+    const planId = vault.planIds[key] || newPlanId();
+    const plan = await buildPlan({
+      planId, planVersion: version,
+      protocolRef: { protocol_id: proto.protocol_id, protocol_version: proto.protocol_version },
+      customizations: {
+        task_frequency: $("freq").value, reminder_times: times,
+        reinforcement_enabled: $("reinf").checked, difficulty_level: $("diff").value,
+        therapist_goals: $("goals").value.split("\n").map((s) => s.trim()).filter(Boolean),
+        therapist_notes: $("notes").value,
+      },
+    });
+    const signed = await signPlan(plan, vault.publisher.privatePkcs8, vault.publisher.publicRaw);
+    const file = await encryptPlanFile(signed, card.publicSpki, card.deviceId);
+    vault.planIds[key] = planId; await save();
+    const blob = new Blob([JSON.stringify(file)], { type: "application/octet-stream" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = "plan-" + planId.slice(0, 8) + "-v" + version + ".jessie"; a.click();
+    m.className = "ok"; m.textContent = "הקובץ הורד. שלחו אותו למטופל/ת בערוץ לבחירתכם — הכלי אינו שולח דבר.";
+  } catch (e) { m.textContent = e.message; }
+};
+</script>
+</body>
+</html>
