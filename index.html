@@ -4,72 +4,101 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'">
+<meta name="theme-color" content="#3d7a63">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <title>ג'סי — כלי מטפל/ת</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 1.5rem auto; padding: 0 1rem; line-height: 1.6; }
-  h1 { font-size: 1.4rem } h2 { font-size: 1.1rem; margin-top: 1.5rem }
-  section { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin: 1rem 0 }
-  label { display: block; margin: .6rem 0 .2rem; font-weight: 600 }
-  input, select, textarea, button { font: inherit; padding: .4rem .6rem; width: 100%; box-sizing: border-box }
-  button { width: auto; cursor: pointer; margin-top: .6rem }
-  textarea { min-height: 4rem }
-  .note { color: #555; font-size: .9rem } .err { color: #b00020 } .ok { color: #0a6b2d }
-  code, .mono { direction: ltr; unicode-bidi: plaintext; word-break: break-all; font-size: .8rem }
-  [hidden] { display: none !important }
+  :root { --bg:#f6f4ef; --card:#fff; --ink:#26302b; --muted:#5d6a63; --accent:#3d7a63; --accent-dark:#2f6150; --accent-soft:#e7f2ec; --line:#d9dfda; --warn:#8a5a00; --warn-soft:#fff4d6; --err:#a3281f; --wa:#1a7f4b; }
+  * { box-sizing: border-box }
+  body { margin:0; background:var(--bg); color:var(--ink); font:1.05rem/1.65 system-ui, "Segoe UI", Arial, sans-serif; -webkit-text-size-adjust:100% }
+  header { background:var(--accent); color:#fff; padding:1.1rem 1rem; }
+  header .in { max-width:760px; margin:0 auto; display:flex; align-items:center; gap:.7rem }
+  header h1 { margin:0; font-size:1.35rem } header p { margin:0; opacity:.9; font-size:.95rem }
+  .logo { width:2.6rem; height:2.6rem; border-radius:50%; background:#fff; color:var(--accent); display:grid; place-items:center; font-weight:700; font-size:1.4rem; flex:none }
+  main { max-width:760px; margin:0 auto; padding:1rem 1rem 4rem }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:1rem 1.1rem; margin:.9rem 0; box-shadow:0 1px 2px rgba(0,0,0,.04) }
+  h2 { font-size:1.2rem; margin:.1rem 0 .5rem } h3 { font-size:1.05rem; margin:.1rem 0 }
+  label { display:block; margin:.8rem 0 .25rem; font-weight:600 }
+  input, select, textarea, button, .btn { font:inherit; padding:.65rem .9rem; border-radius:12px; border:1px solid var(--line); min-height:48px }
+  input, select, textarea { width:100%; background:#fff; color:var(--ink) }
+  textarea { min-height:5rem }
+  button, .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; background:var(--accent); color:#fff; border-color:var(--accent); cursor:pointer; text-decoration:none; font-weight:600 }
+  button:hover, .btn:hover { background:var(--accent-dark) }
+  .btn.wa { background:var(--wa); border-color:var(--wa) }
+  button.secondary, .btn.secondary { background:transparent; color:var(--ink); border-color:var(--line); font-weight:500 }
+  button.danger { background:transparent; color:var(--err); border-color:var(--err); font-weight:500 }
+  button.big { width:100%; min-height:56px; font-size:1.1rem }
+  :focus-visible { outline:3px solid #1b5fa8; outline-offset:2px }
+  .row { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.7rem }
+  .row > * { flex:1 1 11rem }
+  .muted { color:var(--muted); font-size:.95rem } .err { color:var(--err) } .ok { color:var(--accent-dark) }
+  .badge { display:inline-block; padding:.1rem .7rem; border-radius:999px; font-size:.85rem; font-weight:600; background:var(--accent-soft); color:var(--accent-dark) }
+  .badge.wait { background:var(--warn-soft); color:var(--warn) } .badge.off { background:#eceeed; color:var(--muted) }
+  .head { display:flex; justify-content:space-between; align-items:center; gap:.6rem; flex-wrap:wrap }
+  .toast { position:sticky; top:.5rem; z-index:5; background:var(--accent-soft); border:1px solid var(--accent); border-radius:12px; padding:.7rem 1rem; margin:.7rem 0; font-weight:600 }
+  .toast.bad { background:#fdecea; border-color:var(--err); color:var(--err) }
+  .steps { display:flex; gap:.4rem; margin:.4rem 0 }
+  .steps span { flex:1; height:6px; border-radius:3px; background:var(--line) } .steps span.on { background:var(--accent) }
+  .mono { direction:ltr; unicode-bidi:plaintext; word-break:break-all; font:.8rem/1.4 ui-monospace, Consolas, monospace; background:#f0f2ef; padding:.5rem; border-radius:8px }
+  details { margin:.9rem 0 } summary { cursor:pointer; padding:.7rem 0; font-weight:600; min-height:44px }
+  [hidden] { display:none !important }
+  @media (prefers-reduced-motion: no-preference) { .card { transition: border-color .2s } .toast { animation: pop .25s ease-out } @keyframes pop { from { opacity:0; transform:translateY(-6px) } } }
 </style>
 </head>
 <body>
-<h1>ג'סי — כלי מטפל/ת ליצירת תוכנית טיפול</h1>
-<p class="note">הכלי רץ מקומית בלבד, ללא שרת וללא רשת. הוא <b>אינו</b> אחראי להעברת הקובץ למטופל/ת — את הקובץ המוצפן שולחים בערוץ לבחירתכם (מייל, וואטסאפ, USB). אין לשמור בכלי שם או פרט מזהה של מטופל/ת.</p>
+<header><div class="in"><div class="logo" aria-hidden="true">ג׳</div><div><h1>ג'סי</h1><p>המרחב של המטפל/ת</p></div></div></header>
+<main id="main" tabindex="-1">
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<section id="unlock">
-  <h2>1. פתיחה</h2>
-  <p class="note" id="unlockHelp"></p>
-  <label for="pw">סיסמה מקומית</label>
+<section id="unlock" class="card">
+  <h2 id="unlockTitle"></h2>
+  <p class="muted" id="unlockHelp"></p>
+  <label for="pw">סיסמה</label>
   <input id="pw" type="password" autocomplete="off">
-  <button id="unlockBtn"></button>
-  <p id="unlockMsg" class="err"></p>
+  <p id="unlockMsg" class="err" role="alert"></p>
+  <button id="unlockBtn" class="big"></button>
 </section>
 
-<div id="main" hidden>
-<section>
-  <h2>2. מפתח חתימה של המפרסם/ת</h2>
-  <p class="note">המפתח הציבורי הזה חייב להיות מוטבע באפליקציה בעת הבנייה (<code>PUBLISHER_PUBLIC_KEY</code>). המפתח הפרטי נשמר כאן מוצפן בסיסמה, ולא נשלח לשום מקום. גבו אותו בנפרד.</p>
-  <div class="mono" id="pubKey"></div>
-</section>
+<div id="app" hidden>
+  <section class="card">
+    <div class="head"><h2>המטופלים שלי</h2></div>
+    <p class="muted">הוסיפו מטופל/ת, שלחו קישור אישי בוואטסאפ, והם יצטרפו בלחיצה אחת. אין צורך להעתיק קודים או מפתחות.</p>
+    <div id="addForm" hidden>
+      <label for="newLabel">שם פנימי למטופל/ת</label>
+      <input id="newLabel" autocomplete="off" placeholder="למשל: M-12">
+      <p class="muted">מומלץ לא לכתוב שם מלא. השם נשמר רק בדפדפן הזה ולא נשלח למטופל/ת.</p>
+      <p id="addMsg" class="err" role="alert"></p>
+      <div class="row"><button id="addCreate">יצירת קישור אישי</button><button id="addCancel" class="secondary">ביטול</button></div>
+    </div>
+    <button id="addBtn" class="big">＋ הוספת מטופל/ת</button>
+  </section>
 
-<section>
-  <h2>3. כרטיסי מטופלים</h2>
-  <p class="note">הדביקו את קוד ההצמדה שמוצג באפליקציה של המטופל/ת. בחרו תווית פנימית שאינה שם או מזהה אמיתי (למשל "M-12").</p>
-  <label for="pairText">קוד הצמדה</label>
-  <textarea id="pairText" class="mono"></textarea>
-  <label for="cardLabel">תווית פנימית (אם ריק, תילקח מקוד השאלון שבקוד ההצמדה)</label>
-  <input id="cardLabel">
-  <button id="addCard">הוספת כרטיס</button>
-  <p id="cardMsg"></p>
-  <ul id="cards"></ul>
-</section>
+  <div id="list"></div>
+  <section class="card" id="planCard" hidden></section>
 
-<section>
-  <h2>4. יצירת תוכנית</h2>
-  <label for="card">מטופל/ת (כרטיס)</label><select id="card"></select>
-  <label for="proto">פרוטוקול</label><select id="proto"></select>
-  <p class="note" id="protoInfo"></p>
-  <label for="freq">תדירות משימות</label>
-  <select id="freq"><option value="daily">יומית</option><option value="weekly">שבועית</option></select>
-  <label for="times">שעות תזכורת (מופרדות בפסיק, HH:MM)</label><input id="times" value="09:00, 20:30" dir="ltr">
-  <label for="diff">רמת קושי</label>
-  <select id="diff"><option value="easy">קלה</option><option value="moderate" selected>בינונית</option><option value="hard">מאתגרת</option></select>
-  <label><input type="checkbox" id="reinf" checked style="width:auto"> חיזוקים מופעלים</label>
-  <label for="goals">מטרות (שורה לכל מטרה)</label><textarea id="goals"></textarea>
-  <label for="notes">הערות חופשיות</label><textarea id="notes"></textarea>
-  <label for="ver">גרסת תוכנית (חייבת לעלות על הגרסה הקיימת אצל המטופל/ת)</label>
-  <input id="ver" type="number" min="1" value="1" dir="ltr">
-  <button id="export">ייצוא תוכנית מוצפנת וחתומה</button>
-  <p id="expMsg"></p>
-</section>
+  <details class="card">
+    <summary>הגדרות מתקדמות</summary>
+    <p class="muted">רוב המטפלים לא צריכים לגעת כאן.</p>
+    <label for="patientUrl">כתובת האפליקציה של המטופלים</label>
+    <input id="patientUrl" dir="ltr">
+    <label for="therapistUrl">כתובת הכלי הזה (אליה חוזרים מהוואטסאפ)</label>
+    <input id="therapistUrl" dir="ltr">
+    <p id="setMsg" class="muted" role="status"></p>
+    <div class="row"><button id="saveSettings" class="secondary">שמירת כתובות</button></div>
+    <h3 style="margin-top:1.2rem">מפתח החתימה שלי</h3>
+    <p class="muted">המפתח נוצר אוטומטית ונשמר מוצפן בסיסמה. אין צורך להעביר אותו; הוא נשלח למטופלים בתוך הקישור. נדרש רק בבניית אפליקציית אנדרואיד (<code>PUBLISHER_PUBLIC_KEY</code>).</p>
+    <div class="mono" id="pubKey"></div>
+    <h3 style="margin-top:1.2rem">הוספה ידנית (קוד הצמדה)</h3>
+    <p class="muted">למטופלים שכבר משתמשים בשיטה הישנה.</p>
+    <label for="pairText">קוד הצמדה</label>
+    <textarea id="pairText" class="mono"></textarea>
+    <label for="cardLabel">שם פנימי</label>
+    <input id="cardLabel">
+    <p id="cardMsg" role="alert"></p>
+    <div class="row"><button id="addCard" class="secondary">הוספה</button></div>
+  </details>
 </div>
+</main>
 
 <script>
 // Jessie plan-file crypto (shared by the therapist tool and its tests).
@@ -215,95 +244,327 @@ async function openWithPassword(sealed, password) {
 
 </script>
 <script>
+// Personal links (invite / join-response / plan). Shared by the therapist tool, the patient tool and tests.
+// All data travels in the URL fragment (#...), which browsers never send to any server.
+// A link is NOT an access credential: an invite only starts pairing (and is single-use, expiring and revocable
+// by the therapist tool, which is the only verifier); a plan link carries a plan encrypted to one device key.
+
+
+const INVITE_TTL_MS = 72 * 3600 * 1000;
+const BAD_LINK = "הקישור אינו תקין או שנחתך בדרך. בקשו קישור חדש.";
+
+const b64url = (bytes) => b64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64url = (s) => unb64(String(s).replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (String(s).length % 4)) % 4));
+const packJson = (o) => b64url(new TextEncoder().encode(JSON.stringify(o)));
+function unpackJson(s) {
+  try { return JSON.parse(new TextDecoder().decode(unb64url(s))); } catch { throw new Error(BAD_LINK); }
+}
+
+const newInviteId = () => b64url(globalThis.crypto.getRandomValues(new Uint8Array(16)));
+
+/** A usable app address: https, or http on a local development host. Returns the address without query/fragment. */
+function cleanBaseUrl(url) {
+  let u;
+  try { u = new URL(String(url).trim()); } catch { throw new Error("כתובת לא תקינה"); }
+  const local = u.hostname === "localhost" || u.hostname === "127.0.0.1" || u.hostname === "[::1]";
+  if (u.protocol !== "https:" && !(u.protocol === "http:" && local)) throw new Error("הכתובת חייבת להתחיל ב-https");
+  return u.origin + u.pathname;
+}
+
+function makeInvite({ publisherPublicRaw, therapistUrl, now = Date.now(), ttl = INVITE_TTL_MS, id = newInviteId() }) {
+  return { id, exp: now + ttl, payload: { v: 1, inv: id, pub: publisherPublicRaw, exp: now + ttl, ret: cleanBaseUrl(therapistUrl) } };
+}
+const inviteLink = (patientUrl, payload) => cleanBaseUrl(patientUrl) + "#join=" + packJson(payload);
+
+function parseInvite(value, now = Date.now()) {
+  const p = unpackJson(value);
+  if (!p || p.v !== 1 || typeof p.inv !== "string" || typeof p.pub !== "string" || typeof p.exp !== "number" || typeof p.ret !== "string") throw new Error(BAD_LINK);
+  try { cleanBaseUrl(p.ret); } catch { throw new Error(BAD_LINK); }
+  if (now > p.exp) throw new Error("תוקף הקישור פג. בקשו מהמטפל/ת קישור חדש.");
+  return p;
+}
+
+const joinResponse = ({ inv, deviceId, publicSpki }) => ({ v: 1, inv, device_id: deviceId, pub: publicSpki });
+const joinLink = (therapistUrl, resp) => cleanBaseUrl(therapistUrl) + "#joined=" + packJson(resp);
+function parseJoinResponse(value) {
+  const p = unpackJson(value);
+  if (!p || p.v !== 1 || typeof p.inv !== "string" || typeof p.device_id !== "string" || typeof p.pub !== "string") throw new Error(BAD_LINK);
+  return p;
+}
+
+const planLink = (patientUrl, file) => cleanBaseUrl(patientUrl) + "#plan=" + packJson(file);
+function parsePlanLink(value) {
+  const f = unpackJson(value);
+  if (!f || typeof f !== "object") throw new Error(BAD_LINK);
+  return f;
+}
+
+/** "#join=abc" -> { kind: "join", value: "abc" }; anything else -> null. */
+function parseHash(hash) {
+  const m = /^#(join|joined|plan)=([A-Za-z0-9_-]+)$/.exec(hash || "");
+  return m ? { kind: m[1], value: m[2] } : null;
+}
+
+const whatsappUrl = (text) => "https://wa.me/?text=" + encodeURIComponent(text);
+
+/**
+ * Therapist-side acceptance of a patient's join response. Pure: returns { error } or { invites, card }.
+ * The invite must exist, be pending, unexpired and not revoked; it becomes single-use ("joined").
+ */
+function acceptJoin(invites, resp, now = Date.now()) {
+  const i = invites.findIndex((x) => x.id === resp.inv);
+  if (i < 0) return { error: "ההזמנה הזו לא נמצאת במאגר הזה. ייתכן שנוצרה בדפדפן אחר או שנמחקה." };
+  const inv = invites[i];
+  if (inv.status === "revoked") return { error: "ההזמנה בוטלה." };
+  if (inv.status === "joined") return { error: "ההזמנה הזו כבר נוצלה." };
+  if (now > inv.exp) return { error: "תוקף ההזמנה פג." };
+  const card = { label: inv.label, deviceId: resp.device_id, publicSpki: resp.pub, joinedAt: now };
+  const next = invites.map((x, j) => (j === i ? { ...x, status: "joined", deviceId: resp.device_id, joinedAt: now } : x));
+  return { invites: next, card };
+}
+
+</script>
+<script>
 const PROTOCOLS = [{"schema_version":"1.0","protocol_id":"dev-placeholder-exposure","protocol_version":"0.0.1","title":"[DEV] פרוטוקול דמה לפיתוח בלבד","target_population":"בדיקות פיתוח","approved_by":"DEV-PLACEHOLDER — not clinically reviewed","stages":[{"stage_id":"stage-1","title":"שלב בדיקה 1","advance_condition":"3 השלמות רצופות","tasks":[{"task_id":"t1","type":"exercise","prompt":"[DEV] משימת דמה: תאר/י מצב יומיומי קל"},{"task_id":"t2","type":"exercise","prompt":"[DEV] משימת דמה: תרגיל נשימה של דקה"}]}],"reinforcement_pool":{"on_complete":["[DEV] כל הכבוד!"],"on_skip":["[DEV] ננסה שוב מחר."],"on_hard_day":["[DEV] יום קשה הוא חלק מהדרך."]}}];
 const LS_KEY = "jessie-therapist-vault";
+const DEFAULT_PATIENT_URL = "https://jessie.shope-therapy.com/";
+const DEFAULT_THERAPIST_URL = "https://therapist.shope-therapy.com/";
 const $ = (id) => document.getElementById(id);
-let password = null, vault = null; // vault = { publisher: {publicRaw, privatePkcs8}, cards: [{label, deviceId, publicSpki}], planIds: {} }
+let password = null, vault = null; // vault = { publisher, cards:[{label,deviceId,publicSpki,joinedAt?}], invites:[{id,label,exp,status,payload}], planIds, planVers, settings }
+let planFor = null; // index of the patient card a plan is being prepared for
+let pendingJoin = null; // join response from a link opened before the vault was unlocked
+
+// The fragment never reaches a server; read it once and remove it from the address bar.
+let startHash = parseHash(location.hash);
+if (startHash) history.replaceState(null, "", location.pathname + location.search);
+// Link tapped while this page is already open (same tab).
+addEventListener("hashchange", async () => {
+  const h = parseHash(location.hash); if (!h) return;
+  history.replaceState(null, "", location.pathname + location.search);
+  if (!vault) { startHash = h; return; }
+  if (h.kind === "joined") { await handleJoined(h.value); render(); }
+});
 
 const stored = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; } };
-$("unlockHelp").textContent = stored() ? "הזינו את הסיסמה שהגדרתם." : "הפעלה ראשונה: בחרו סיסמה. היא תצפין את מפתח החתימה וכרטיסי המטופלים, ואין דרך לשחזר אותה.";
-$("unlockBtn").textContent = stored() ? "פתיחה" : "יצירת מאגר";
-
 async function save() { localStorage.setItem(LS_KEY, JSON.stringify(await sealWithPassword(vault, password))); }
+
+function el(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") e.className = v; else if (k === "onclick") e.onclick = v; else if (k === "text") e.textContent = v; else e.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) e.append(kid);
+  return e;
+}
+const btn = (text, onclick, cls = "") => el("button", { type: "button", class: cls, onclick, text });
+const waLink = (text, message, cls = "wa") => el("a", { class: "btn " + cls, href: whatsappUrl(message), target: "_blank", rel: "noopener", text });
+let toastTimer;
+function toast(text, bad = false) {
+  const t = $("toast"); t.textContent = text; t.className = "toast" + (bad ? " bad" : ""); t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 12000);
+}
+const when = (ms) => new Date(ms).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" });
+
+function settings() {
+  const s = vault.settings || {};
+  return {
+    patientUrl: s.patientUrl || DEFAULT_PATIENT_URL,
+    therapistUrl: s.therapistUrl || (/^https?:$/.test(location.protocol) ? location.origin + location.pathname : DEFAULT_THERAPIST_URL),
+  };
+}
+
+// ---------- Unlock ----------
+$("unlockTitle").textContent = stored() ? "ברוכים השבים" : "בואו נתחיל";
+$("unlockHelp").textContent = (stored()
+  ? "הזינו את הסיסמה שבחרתם."
+  : "בחרו סיסמה. היא מגנה על רשימת המטופלים ועל מפתח החתימה שלכם, ואין דרך לשחזר אותה — רשמו אותה במקום בטוח.")
+  + (startHash && startHash.kind === "joined" ? " אחרי הכניסה נשלים את ההצטרפות של המטופל/ת שנשלחה אליכם." : "");
+$("unlockBtn").textContent = stored() ? "כניסה" : "יצירת מרחב חדש";
 
 $("unlockBtn").onclick = async () => {
   $("unlockMsg").textContent = "";
   const pw = $("pw").value;
-  if (pw.length < 8) { $("unlockMsg").textContent = "הסיסמה חייבת להכיל לפחות 8 תווים"; return; }
+  if (pw.length < 8) { $("unlockMsg").textContent = "הסיסמה צריכה להכיל לפחות 8 תווים."; return; }
   try {
     const s = stored();
     if (s) vault = await openWithPassword(s, pw);
     else vault = { publisher: await generatePublisherKeys(), cards: [], planIds: {} };
+    vault.invites ||= []; vault.planVers ||= {}; vault.settings ||= {};
     password = pw;
     await save();
-    $("unlock").hidden = true; $("main").hidden = false; render();
+    $("unlock").hidden = true; $("app").hidden = false;
+    if (startHash && startHash.kind === "joined") await handleJoined(startHash.value);
+    render();
   } catch (e) { $("unlockMsg").textContent = e.message; }
 };
+$("pw").addEventListener("keydown", (e) => { if (e.key === "Enter") $("unlockBtn").click(); });
 
+async function handleJoined(value) {
+  try {
+    const resp = parseJoinResponse(value);
+    const r = acceptJoin(vault.invites, resp);
+    if (r.error) { toast(r.error + " אם צריך, צרו הזמנה חדשה.", true); return; }
+    vault.invites = r.invites; vault.cards.push(r.card);
+    await save();
+    toast(`${r.card.label} הצטרף/ה בהצלחה. אפשר ליצור עבורם תוכנית.`);
+  } catch (e) { toast(e.message, true); }
+}
+
+// ---------- Patients ----------
+function inviteMessage(inv) {
+  return "שלום! זה הקישור האישי שלך להצטרפות לג'סי. הוא תקף ל-3 ימים ומיועד רק לך:\n" + inviteLink(settings().patientUrl, inv.payload);
+}
 function render() {
   $("pubKey").textContent = vault.publisher.publicRaw;
-  $("cards").innerHTML = ""; $("card").innerHTML = "";
-  vault.cards.forEach((c, i) => {
-    const li = document.createElement("li"); li.textContent = c.label + " ";
-    const rm = document.createElement("button"); rm.textContent = "הסרה";
-    rm.onclick = async () => { vault.cards.splice(i, 1); await save(); render(); };
-    li.append(rm); $("cards").append(li);
-    $("card").append(new Option(c.label, i));
+  const s = settings(); $("patientUrl").value = s.patientUrl; $("therapistUrl").value = s.therapistUrl;
+  const list = $("list"); list.replaceChildren();
+  const now = Date.now();
+
+  vault.invites.filter((i) => i.status !== "joined").forEach((inv) => {
+    const state = inv.status === "revoked" ? ["בוטל", "off"] : now > inv.exp ? ["פג תוקף", "off"] : ["ממתין להצטרפות", "wait"];
+    const live = state[1] === "wait";
+    const card = el("div", { class: "card" },
+      el("div", { class: "head" }, el("h3", { text: inv.label }), el("span", { class: "badge " + state[1], text: state[0] })),
+      el("div", { class: "steps", "aria-hidden": "true" }, el("span", { class: "on" }), el("span"), el("span")),
+      el("p", { class: "muted", text: live ? "תקף עד " + when(inv.exp) + ". הקישור חד־פעמי." : "הקישור הזה כבר לא פעיל." }));
+    const row = el("div", { class: "row" });
+    if (live) {
+      row.append(waLink("שליחת קישור בוואטסאפ", inviteMessage(inv)));
+      row.append(btn("העתקת הקישור", async () => {
+        try { await navigator.clipboard.writeText(inviteLink(settings().patientUrl, inv.payload)); toast("הקישור הועתק"); } catch { toast("ההעתקה נחסמה בדפדפן. אפשר לשלוח דרך הכפתור הירוק.", true); }
+      }, "secondary"));
+      row.append(btn("ביטול הקישור", async () => {
+        if (!confirm("לבטל את הקישור? מי שיפתח אותו לא יוכל להצטרף.")) return;
+        inv.status = "revoked"; await save(); render();
+      }, "danger"));
+    } else {
+      row.append(btn("הסרה מהרשימה", async () => { vault.invites = vault.invites.filter((x) => x !== inv); await save(); render(); }, "secondary"));
+    }
+    card.append(row); list.append(card);
   });
-  if (!$("proto").options.length) PROTOCOLS.forEach((p, i) => $("proto").append(new Option(p.title, i)));
-  const p = PROTOCOLS[$("proto").value || 0];
-  $("protoInfo").textContent = p ? "אושר על ידי: " + p.approved_by : "";
+
+  vault.cards.forEach((c, i) => {
+    const card = el("div", { class: "card" },
+      el("div", { class: "head" }, el("h3", { text: c.label }), el("span", { class: "badge", text: "מחובר/ת" })),
+      el("div", { class: "steps", "aria-hidden": "true" }, el("span", { class: "on" }), el("span", { class: "on" }), el("span", { class: "on" })),
+      c.joinedAt ? el("p", { class: "muted", text: "הצטרף/ה ב-" + when(c.joinedAt) }) : null,
+      el("div", { class: "row" },
+        btn("יצירת תוכנית ושליחה", () => { planFor = i; renderPlan(); $("planCard").scrollIntoView({ behavior: "smooth", block: "start" }); }),
+        btn("הסרה", async () => {
+          if (!confirm("להסיר את " + c.label + "? תוכניות חדשות לא יוכלו להישלח אליהם.")) return;
+          vault.cards.splice(i, 1); if (planFor === i) planFor = null; else if (planFor > i) planFor--;
+          await save(); render();
+        }, "danger")));
+    list.append(card);
+  });
+
+  if (!list.children.length) list.append(el("div", { class: "card muted", text: "עדיין אין מטופלים. לחצו על ״הוספת מטופל/ת״ כדי להתחיל." }));
+  renderPlan();
 }
-$("proto").onchange = render;
+
+$("addBtn").onclick = () => { $("addForm").hidden = false; $("addBtn").hidden = true; $("newLabel").focus(); };
+$("addCancel").onclick = () => { $("addForm").hidden = true; $("addBtn").hidden = false; $("addMsg").textContent = ""; };
+$("addCreate").onclick = async () => {
+  const label = $("newLabel").value.trim();
+  if (!label) { $("addMsg").textContent = "הזינו שם פנימי, למשל M-12."; return; }
+  try {
+    const made = makeInvite({ publisherPublicRaw: vault.publisher.publicRaw, therapistUrl: settings().therapistUrl });
+    inviteLink(settings().patientUrl, made.payload); // validates the patient app address
+    vault.invites.unshift({ id: made.id, label, exp: made.exp, status: "pending", payload: made.payload });
+    await save();
+    $("newLabel").value = ""; $("addMsg").textContent = ""; $("addCancel").click();
+    toast("הקישור האישי מוכן. לחצו על ״שליחת קישור בוואטסאפ״.");
+    render();
+  } catch (e) { $("addMsg").textContent = e.message + " (אפשר לתקן בהגדרות מתקדמות)"; }
+};
+$("newLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") $("addCreate").click(); });
+
+$("saveSettings").onclick = async () => {
+  const m = $("setMsg");
+  try {
+    vault.settings = { patientUrl: cleanBaseUrl($("patientUrl").value), therapistUrl: cleanBaseUrl($("therapistUrl").value) };
+    await save(); m.className = "ok"; m.textContent = "נשמר. קישורים חדשים ישתמשו בכתובות האלה.";
+  } catch (e) { m.className = "err"; m.textContent = e.message; }
+};
 
 $("addCard").onclick = async () => {
   try {
     const text = $("pairText").value.trim();
     const { deviceId, publicSpki } = parsePairing(text);
-    // Optional questionnaire invite code (identifier only, never key material).
     const invite = JSON.parse(text).invite;
     if (invite !== undefined && !/^P-[A-Z0-9]{6}$/.test(invite)) throw new Error("קוד השאלון בקוד ההצמדה אינו תקין");
     const label = $("cardLabel").value.trim() || invite || "";
-    if (!label) throw new Error("יש להזין תווית פנימית");
-    vault.cards.push({ label, deviceId, publicSpki, ...(invite ? { invite } : {}) });
+    if (!label) throw new Error("יש להזין שם פנימי");
+    vault.cards.push({ label, deviceId, publicSpki, joinedAt: Date.now(), ...(invite ? { invite } : {}) });
     await save(); $("pairText").value = ""; $("cardLabel").value = ""; $("cardMsg").textContent = ""; render();
   } catch (e) { $("cardMsg").className = "err"; $("cardMsg").textContent = e.message; }
 };
 
-$("export").onclick = async () => {
-  const m = $("expMsg"); m.className = "err"; m.textContent = "";
-  try {
-    const card = vault.cards[$("card").value];
-    if (!card) throw new Error("יש להוסיף ולבחור כרטיס מטופל/ת");
-    const proto = PROTOCOLS[$("proto").value];
-    if (!proto.approved_by || proto.approved_by.startsWith("DEV-PLACEHOLDER")) {
-      if (!confirm("הפרוטוקול הזה מסומן כפרוטוקול פיתוח שלא נבדק קלינית. להמשיך?")) return;
-    }
-    const times = $("times").value.split(",").map((s) => s.trim()).filter(Boolean);
-    if (!times.every((t) => /^([01]\d|2[0-3]):[0-5]\d$/.test(t))) throw new Error("שעות התזכורת חייבות להיות בפורמט HH:MM");
-    const version = parseInt($("ver").value, 10);
-    if (!(version >= 1)) throw new Error("גרסת תוכנית לא תקינה");
-    const key = card.deviceId + "|" + proto.protocol_id;
-    const planId = vault.planIds[key] || newPlanId();
-    const plan = await buildPlan({
-      planId, planVersion: version,
-      protocolRef: { protocol_id: proto.protocol_id, protocol_version: proto.protocol_version },
-      customizations: {
-        task_frequency: $("freq").value, reminder_times: times,
-        reinforcement_enabled: $("reinf").checked, difficulty_level: $("diff").value,
-        therapist_goals: $("goals").value.split("\n").map((s) => s.trim()).filter(Boolean),
-        therapist_notes: $("notes").value,
-      },
-    });
-    const signed = await signPlan(plan, vault.publisher.privatePkcs8, vault.publisher.publicRaw);
-    const file = await encryptPlanFile(signed, card.publicSpki, card.deviceId);
-    vault.planIds[key] = planId; await save();
-    const blob = new Blob([JSON.stringify(file)], { type: "application/octet-stream" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = "plan-" + planId.slice(0, 8) + "-v" + version + ".jessie"; a.click();
-    m.className = "ok"; m.textContent = "הקובץ הורד. שלחו אותו למטופל/ת בערוץ לבחירתכם — הכלי אינו שולח דבר.";
-  } catch (e) { m.textContent = e.message; }
-};
+// ---------- Plan ----------
+function renderPlan() {
+  const box = $("planCard");
+  const card = planFor != null ? vault.cards[planFor] : null;
+  box.hidden = !card;
+  if (!card) return;
+  const field = (id, label, node) => [el("label", { for: id, text: label }), node];
+  const proto = el("select", { id: "proto" }); PROTOCOLS.forEach((p, i) => proto.append(new Option(p.title, i)));
+  const info = el("p", { class: "muted", id: "protoInfo" });
+  proto.onchange = () => { const p = PROTOCOLS[proto.value]; info.textContent = p ? "אושר על ידי: " + p.approved_by : ""; };
+  const freq = el("select", { id: "freq" }); freq.append(new Option("יומית", "daily"), new Option("שבועית", "weekly"));
+  const times = el("input", { id: "times", value: "09:00, 20:30", dir: "ltr" });
+  const diff = el("select", { id: "diff" }); diff.append(new Option("קלה", "easy"), new Option("בינונית", "moderate", true, true), new Option("מאתגרת", "hard"));
+  const reinf = el("input", { type: "checkbox", id: "reinf", checked: "", style: "width:auto;min-height:0" });
+  const goals = el("textarea", { id: "goals" }), notes = el("textarea", { id: "notes" });
+  const msg = el("p", { id: "expMsg", class: "err", role: "alert" });
+  const out = el("div", { id: "planOut" });
+
+  box.replaceChildren(
+    el("h2", { text: "תוכנית עבור " + card.label }),
+    ...field("proto", "פרוטוקול", proto), info,
+    ...field("freq", "תדירות משימות", freq),
+    ...field("times", "שעות תזכורת (מופרדות בפסיק)", times),
+    ...field("diff", "רמת קושי", diff),
+    el("label", {}, reinf, " חיזוקים מופעלים"),
+    ...field("goals", "מטרות (שורה לכל מטרה)", goals),
+    ...field("notes", "הערה אישית למטופל/ת", notes),
+    msg,
+    el("div", { class: "row" }, btn("יצירת תוכנית", async () => {
+      msg.textContent = ""; out.replaceChildren();
+      try {
+        const p = PROTOCOLS[proto.value];
+        if (!p.approved_by || p.approved_by.startsWith("DEV-PLACEHOLDER")) {
+          if (!confirm("הפרוטוקול הזה מסומן כפרוטוקול פיתוח שלא נבדק קלינית. להמשיך?")) return;
+        }
+        const t = times.value.split(",").map((s) => s.trim()).filter(Boolean);
+        if (!t.length || !t.every((x) => /^([01]\d|2[0-3]):[0-5]\d$/.test(x))) throw new Error("שעות התזכורת צריכות להיות בפורמט 09:00 ומופרדות בפסיק.");
+        const key = card.deviceId + "|" + p.protocol_id;
+        const version = (vault.planVers[key] || 0) + 1;
+        const planId = vault.planIds[key] || newPlanId();
+        const plan = await buildPlan({
+          planId, planVersion: version,
+          protocolRef: { protocol_id: p.protocol_id, protocol_version: p.protocol_version },
+          customizations: {
+            task_frequency: freq.value, reminder_times: t, reinforcement_enabled: reinf.checked, difficulty_level: diff.value,
+            therapist_goals: goals.value.split("\n").map((s) => s.trim()).filter(Boolean), therapist_notes: notes.value,
+          },
+        });
+        const signed = await signPlan(plan, vault.publisher.privatePkcs8, vault.publisher.publicRaw);
+        const file = await encryptPlanFile(signed, card.publicSpki, card.deviceId);
+        vault.planIds[key] = planId; vault.planVers[key] = version; await save();
+        const link = planLink(settings().patientUrl, file);
+        out.replaceChildren(
+          el("p", { class: "ok", text: "התוכנית מוכנה (גרסה " + version + "). היא מוצפנת ופותחת רק במכשיר של " + card.label + "." }),
+          el("div", { class: "row" },
+            waLink("שליחת התוכנית בוואטסאפ", "שלום! התוכנית האישית שלך בג'סי מוכנה. הקישור פותח אותה ישירות במכשיר שלך:\n" + link),
+            btn("הורדה כקובץ", () => {
+              const a = el("a", { href: URL.createObjectURL(new Blob([JSON.stringify(file)], { type: "application/octet-stream" })), download: "plan-" + planId.slice(0, 8) + "-v" + version + ".jessie" });
+              document.body.append(a); a.click(); a.remove();
+            }, "secondary")));
+      } catch (e) { msg.textContent = e.message; }
+    }), btn("סגירה", () => { planFor = null; renderPlan(); }, "secondary")),
+    out);
+  proto.onchange();
+}
 </script>
 </body>
 </html>
