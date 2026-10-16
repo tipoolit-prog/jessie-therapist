@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="theme-color" content="#3d7a63">
+<meta name="theme-color" content="#5b3a9e">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <title>ג'סי — כלי מטפל/ת</title>
 <style>
-  :root { --bg:#f6f4ef; --card:#fff; --ink:#26302b; --muted:#5d6a63; --accent:#3d7a63; --accent-dark:#2f6150; --accent-soft:#e7f2ec; --line:#d9dfda; --warn:#8a5a00; --warn-soft:#fff4d6; --err:#a3281f; --wa:#1a7f4b; }
+  :root { --bg:#fbf6f0; --card:#fff; --ink:#2b2140; --muted:#675c7a; --accent:#5b3a9e; --accent-dark:#46298a; --accent-soft:#efe8fb; --line:#e4ddef; --warn:#7a4f00; --warn-soft:#ffe6d6; --err:#a3281f; --wa:#17784a; }
   * { box-sizing: border-box }
   body { margin:0; background:var(--bg); color:var(--ink); font:1.05rem/1.65 system-ui, "Segoe UI", Arial, sans-serif; -webkit-text-size-adjust:100% }
   header { background:var(--accent); color:#fff; padding:1.1rem 1rem; }
@@ -40,6 +40,7 @@
   .steps { display:flex; gap:.4rem; margin:.4rem 0 }
   .steps span { flex:1; height:6px; border-radius:3px; background:var(--line) } .steps span.on { background:var(--accent) }
   .mono { direction:ltr; unicode-bidi:plaintext; word-break:break-all; font:.8rem/1.4 ui-monospace, Consolas, monospace; background:#f0f2ef; padding:.5rem; border-radius:8px }
+  .row > button.mv { flex:0 0 3rem; min-width:0; padding:0 }
   details { margin:.9rem 0 } summary { cursor:pointer; padding:.7rem 0; font-weight:600; min-height:44px }
   [hidden] { display:none !important }
   @media (prefers-reduced-motion: no-preference) { .card { transition: border-color .2s } .toast { animation: pop .25s ease-out } @keyframes pop { from { opacity:0; transform:translateY(-6px) } } }
@@ -325,7 +326,7 @@ function acceptJoin(invites, resp, now = Date.now()) {
 
 </script>
 <script>
-const PROTOCOLS = [{"schema_version":"1.0","protocol_id":"dev-placeholder-exposure","protocol_version":"0.0.1","title":"[DEV] פרוטוקול דמה לפיתוח בלבד","target_population":"בדיקות פיתוח","approved_by":"DEV-PLACEHOLDER — not clinically reviewed","stages":[{"stage_id":"stage-1","title":"שלב בדיקה 1","advance_condition":"3 השלמות רצופות","tasks":[{"task_id":"t1","type":"exercise","prompt":"[DEV] משימת דמה: תאר/י מצב יומיומי קל"},{"task_id":"t2","type":"exercise","prompt":"[DEV] משימת דמה: תרגיל נשימה של דקה"}]}],"reinforcement_pool":{"on_complete":["[DEV] כל הכבוד!"],"on_skip":["[DEV] ננסה שוב מחר."],"on_hard_day":["[DEV] יום קשה הוא חלק מהדרך."]}}];
+const PROTOCOLS = [{"schema_version":"1.0","protocol_id":"dev-placeholder-exposure","protocol_version":"0.0.1","title":"[DEV] פרוטוקול דמה לפיתוח בלבד","target_population":"בדיקות פיתוח","approved_by":"DEV-PLACEHOLDER — not clinically reviewed","stages":[{"stage_id":"stage-1","title":"שלב בדיקה 1","advance_condition":"3 השלמות רצופות","tasks":[{"task_id":"t1","type":"exercise","prompt":"[DEV] משימת דמה: תאר/י מצב יומיומי קל"},{"task_id":"t2","type":"exercise","prompt":"[DEV] משימת דמה: תרגיל נשימה של דקה"}]}],"reinforcement_pool":{"on_complete":["[DEV] כל הכבוד!"],"on_skip":["[DEV] ננסה שוב מחר."],"on_hard_day":["[DEV] יום קשה הוא חלק מהדרך."]},"track":"adult","persona":"jessie"}];
 const LS_KEY = "jessie-therapist-vault";
 const DEFAULT_PATIENT_URL = "https://jessie.shope-therapy.com/";
 const DEFAULT_THERAPIST_URL = "https://therapist.shope-therapy.com/";
@@ -509,7 +510,25 @@ function renderPlan() {
   const field = (id, label, node) => [el("label", { for: id, text: label }), node];
   const proto = el("select", { id: "proto" }); PROTOCOLS.forEach((p, i) => proto.append(new Option(p.title, i)));
   const info = el("p", { class: "muted", id: "protoInfo" });
-  proto.onchange = () => { const p = PROTOCOLS[proto.value]; info.textContent = p ? "אושר על ידי: " + p.approved_by : ""; };
+  // Module selection and order (stored in the signed plan as stage_order; the patient app applies it).
+  const mods = el("div", { id: "mods" });
+  let modList = [];
+  const resetMods = () => { const p = PROTOCOLS[proto.value]; modList = p ? p.stages.map((s) => ({ id: s.stage_id, title: s.title, on: true })) : []; drawMods(); };
+  function drawMods() {
+    mods.replaceChildren(...modList.map((m, i) => el("div", { class: "row", style: "align-items:center;flex-wrap:nowrap" },
+      el("label", { style: "flex:1;margin:0;display:flex;gap:.5rem;align-items:center;font-weight:500" },
+        el("input", { type: "checkbox", style: "width:auto;min-height:0", ...(m.on ? { checked: "" } : {}), onchange: (e) => { m.on = e.target.checked; } }), m.title),
+      btn("↑", () => { if (i > 0) { [modList[i - 1], modList[i]] = [modList[i], modList[i - 1]]; drawMods(); } }, "secondary mv"),
+      btn("↓", () => { if (i < modList.length - 1) { [modList[i + 1], modList[i]] = [modList[i], modList[i + 1]]; drawMods(); } }, "secondary mv"))));
+  }
+  const customOrder = () => {
+    const p = PROTOCOLS[proto.value];
+    const chosen = modList.filter((m) => m.on).map((m) => m.id);
+    if (!chosen.length) throw new Error("יש לבחור לפחות מודול אחד.");
+    const same = chosen.length === p.stages.length && chosen.every((id, i) => id === p.stages[i].stage_id);
+    return same ? null : chosen;
+  };
+  proto.onchange = () => { const p = PROTOCOLS[proto.value]; info.textContent = p ? "אושר על ידי: " + p.approved_by : ""; resetMods(); };
   const freq = el("select", { id: "freq" }); freq.append(new Option("יומית", "daily"), new Option("שבועית", "weekly"));
   const times = el("input", { id: "times", value: "09:00, 20:30", dir: "ltr" });
   const diff = el("select", { id: "diff" }); diff.append(new Option("קלה", "easy"), new Option("בינונית", "moderate", true, true), new Option("מאתגרת", "hard"));
@@ -521,6 +540,7 @@ function renderPlan() {
   box.replaceChildren(
     el("h2", { text: "תוכנית עבור " + card.label }),
     ...field("proto", "פרוטוקול", proto), info,
+    el("h3", { text: "מודולים (אפשר לדלג, להחליף סדר או להקדים)" }), mods,
     ...field("freq", "תדירות משימות", freq),
     ...field("times", "שעות תזכורת (מופרדות בפסיק)", times),
     ...field("diff", "רמת קושי", diff),
@@ -537,6 +557,7 @@ function renderPlan() {
         }
         const t = times.value.split(",").map((s) => s.trim()).filter(Boolean);
         if (!t.length || !t.every((x) => /^([01]\d|2[0-3]):[0-5]\d$/.test(x))) throw new Error("שעות התזכורת צריכות להיות בפורמט 09:00 ומופרדות בפסיק.");
+        const stageOrder = customOrder();
         const key = card.deviceId + "|" + p.protocol_id;
         const version = (vault.planVers[key] || 0) + 1;
         const planId = vault.planIds[key] || newPlanId();
